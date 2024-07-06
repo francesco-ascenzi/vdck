@@ -83,7 +83,7 @@ export function isKeyInObject(
   showErrors?: boolean
 ): boolean;
 
-/** Check if the given input is not undefined nor null
+/** Check if the given input is not undefined nor null based on function's parameter
  * 
  * @param {any} value - Any value to check
  * @return {boolean}
