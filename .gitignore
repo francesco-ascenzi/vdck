@@ -1,0 +1,7 @@
+# files
+.npmignore
+
+index.js
+
+# modules
+/node_modules

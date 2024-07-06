@@ -1,0 +1,42 @@
+{
+  "name": "vdck",
+  "version": "0.0.2",
+  "author": "Frash | Francesco Ascenzi",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/francesco-ascenzi/vdck.git"
+  },
+  "typings": "./types/vdck.d.ts",
+  "description": "Vdck is a TypeScript/CJS library providing validation functions for various primitive data types",
+  "keywords": [
+    "typeScript",
+    "validation",
+    "data validation",
+    "array validation",
+    "string validation",
+    "number validation",
+    "object validation",
+    "utility library",
+    "regular expression validation",
+    "nodejs",
+    "javascript"
+  ],
+  "directories": {
+    "lib": "./lib/vdck"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "node": "^20.14.0",
+    "typescript": "^5.4.5"
+  },
+  "main": "./index.js",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/francesco-ascenzi/vdck/issues"
+  },
+  "homepage": "https://github.com/francesco-ascenzi/vdck",
+  "funding": "https://www.paypal.com/donate/?hosted_button_id=QL4PRUX9K9Y6A"
+}
