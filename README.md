@@ -6,12 +6,12 @@ Vdck is a TypeScript/CJS package that providing primitive data validation functi
 - **Compatibility**: Fully compatible with Node.js versions >= 6.0.0.
 
 ## Summary
-**- Install**  
-**- Import**  
-**- Functions**  
-**- Funding**  
-**- Author**  
-**- License**  
+- [Install](#install)  
+- [Import](#import)  
+- [Functions](#functions)  
+- [Funding](#funding)  
+- [Author](#author)  
+- [License](#license)  
 
 ## Install
 To get started with vdck, simply install the npm package:
