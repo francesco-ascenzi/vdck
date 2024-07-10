@@ -4,6 +4,7 @@
  * Vdck is a TypeScript/CJS library providing validation functions for various primitive data types
  * 
  * @function isArray - Check if the given input is a valid array based on function's parameters
+ * @function isEmail - Check if the given input is a valid email address based on function's parameters
  * @function isKeyInObject - Check if the given key exists within the given object and its value's type based on function's parameters
  * @function isNotUndefinedNull - Check if the given input is not undefined nor null
  * @function isNumber - Check if the given input is a valid number based on function's parameters
@@ -58,12 +59,27 @@ export function isString(
   showErrors?: boolean
 ): boolean;
 
+/** Check if the given input is a valid email address based on function's parameters
+ * 
+ * @param {any} value - Any value to check
+ * @param {boolean} [trim=true] - Should it trims the given value before checking it?
+ * @param {RegExp | null} [regex=null] - Check regular expression to validate the email address
+ * @param {boolean} [showErrors=false] - Should it prints error message on the CLI?
+ * @return {boolean}
+ */
+export function isEmail(
+  value: any, 
+  trim: boolean, 
+  regex: RegExp | null, 
+  showErrors: boolean
+): boolean;
+
 /** Check if the given key exists within the given object and its value's type based on function's parameters
  * 
  * @param {Obj} value - Any value to check
  * @param {string} key - Given object's key
  * @param {string} keyValueType - Given object's key value
- * @param {object} options - Value's key options for every type
+ * @param {object | null} options - Value's key options for every type
  * 
  * @param {undefined | number} options.maxLength - Value's key options for maximum length types
  * @param {undefined | number} options.minLength - Value's key options for minimum length

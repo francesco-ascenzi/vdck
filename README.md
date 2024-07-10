@@ -6,6 +6,7 @@ Vdck is a TypeScript/CJS package that providing primitive data validation functi
 - **Compatibility**: Fully compatible with Node.js versions >= 6.0.0.
 
 ## Summary
+- [Updates](#updates)  
 - [Install](#install)  
 - [Import](#import)  
 - [Functions](#functions)  
@@ -13,6 +14,13 @@ Vdck is a TypeScript/CJS package that providing primitive data validation functi
 - [Author](#author)  
 - [License](#license)  
 
+## Updates
+**v 1.1**:  
+- Added the ```isEmail``` function to validate email addresses
+- Delete unnecessary arrays check on ```isKeyInObject```  
+- Added another param to to ```isNumber``` => ```'a'``` => it checks that is a number without a specific tag (int or float)  
+- Edit/delete comments and README.md  
+  
 ## Install
 To get started with vdck, simply install the npm package:
 ```
@@ -41,10 +49,10 @@ Check if the given input is a valid array based on function's parameters:
   
 ```
 // Node > CommonJS
-vdck.isArray([], 0, 1, true);
+vdck.isArray(["Hello", " world", "!"]);
 
 // Node > ES6
-isArray([], 0, 1, true);
+isArray(["Hello", " world", "!"]);
 ```
 
 ### isString
@@ -58,14 +66,28 @@ Check if the given input is a valid string based on function's parameters:
   
 ```
 // Node > CommonJS
-vdck.isString('Ciao!', true, 0, 100, /^[a-zA-Z0-9]+$/gm, true);
+vdck.isString("Ciao!", true, 0, 100, /^[a-zA-Z0-9]+$/gm);
 
 // Node > ES6
-isString('Ciao!', true, 0, 100, /^[a-zA-Z0-9]+$/gm, true);
+isString("Ciao!", true, 0, 100, /^[a-zA-Z0-9]+$/gm);
 ```
+  
+### isEmail
+Check if the given input is a valid email address based on function's parameters:
+- value **{any}** - Any value to check.
+- trim **{boolean}** - (default: true) - Should it trims the given value before checking it?
+- regex **{RegExp | null}** - (default: null) - Check regular expression to validate the email address.
+- showErrors **{boolean}** - (default: false) - Should it prints error message on the CLI?  
+  
+```
+// Node > CommonJS
+vdck.isEmail("helloWorld@gmail.com");
 
+// Node > ES6
+isEmail("helloWorld@gmail.com");
+```
+  
 ### isKeyInObject  
-> [!NOTE]
 > isKeyInObject function has default values for its options' parameters:  
 > **maxLength**: number = 40000;  
 > **minLength**: number = 0;  
@@ -88,10 +110,10 @@ Check if the given key exists within the given object and its value's type based
   
 ```
 // Node > CommonJS
-vdck.isKeyInObject({ "Hi": 2 }, 'Hi', 'ni', null, true);
+vdck.isKeyInObject({ "Hi": 2 }, 'Hi', 'n');
 
 // Node > ES6
-isKeyInObject({ "Hi": 2 }, 'Hi', 'ni', null, true);
+isKeyInObject({ "Hi": 2 }, 'Hi', 'n');
 ```  
 
 ### isNotUndefinedNull
@@ -109,16 +131,16 @@ isNotUndefinedNull(false);
 ### isNumber
 Check if the given input is a valid number based on function's parameters:
 - value **{any}** - Any value to check.
-- numberType **{number}** - (default: 'i') - Should it be an int or a float? 'i' -> int | 'f' -> float.
+- numberType **{number}** - (default: 'i') - Should it be an int or a float? 'a' -> all | 'i' -> int | 'f' -> float.
 - type **{number}** - (default: 0) - Should it be a real number, a positive number, or a negative number?
 - showErrors **{boolean}** - (default: false) - Should it prints error message on the console?
   
 ```
 // Node > CommonJS
-vdck.isNumber([], 0, 1, true);
+vdck.isNumber(21, 'i', 1);
 
 // Node > ES6
-isNumber([], 0, 1, true);
+isNumber(21, 'i', 1);
 
 ```
 
@@ -131,32 +153,12 @@ Check if the given input is a valid object based on function's parameters:
   
 ```
 // Node > CommonJS
-vdck.isObject([], 0, 1, true);
+vdck.isObject({}, 0, 1, true);
 
 // Node > ES6
-isObject([], 0, 1, true);
+isObject({}, 0, 1, true);
 ```
   
-## Funding
-If you liked this package, consider funding it at [@PayPal](https://www.paypal.com/donate/?hosted_button_id=QL4PRUX9K9Y6A) (the link is within package.json too)
-
-## Author
-Frash | Francesco Ascenzi ([@fra.ascenzi](https://www.instagram.com/fra.ascenzi) on IG)
-
-## License
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
-You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-isKeyInObject function has default values for its options' parameters:
-```
-maxLength: number = 40000;
-minLength: number = 0;
-regx: RegExp | null = null;
-type: -1 | 0 | 1 = 0;
-trim: boolean = true;
-```
-
 ## Funding
 If you liked this package, consider funding it at [@PayPal](https://www.paypal.com/donate/?hosted_button_id=QL4PRUX9K9Y6A) (the link is within package.json too)
 

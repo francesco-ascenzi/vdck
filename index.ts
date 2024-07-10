@@ -11,6 +11,10 @@
  * ======================= == == == = = =  =  = */
 
 
+// Based on RFC 5322
+const EMAIL_REGEX: RegExp = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
+
+
 export function isArray(
   value: any,
   minLength: number = 0,
@@ -70,6 +74,13 @@ export function isString(
 }
 
 
+export function isEmail(value: any, trim: boolean = false, regex: RegExp | null = null, showErrors: boolean = false): boolean {
+  if (!regex) regex = EMAIL_REGEX;
+  if (!isString(value, trim, 5, 254, regex, showErrors)) return false;
+  return true;
+}
+
+
 export function isKeyInObject<Obj extends Record<string, any>>(value: Obj, key: string, keyValueType: string, options: {
   maxLength?: number,
   minLength?: number,
@@ -117,7 +128,6 @@ export function isKeyInObject<Obj extends Record<string, any>>(value: Obj, key: 
   switch (keyValueType.toLowerCase()) {
     case 'a': // Array
       if (!isArray(value[key], minLength, maxLength, showErrors)) {
-        if (showErrors) console.error(`\x1b[31mValue of '${key}' key is not an array\x1b[0m`);
         return false;
       }
       break;
@@ -145,14 +155,17 @@ export function isKeyInObject<Obj extends Record<string, any>>(value: Obj, key: 
         return false;
       }
       break;
-    case 'nf': // Float
+    case 'n': // Number
+      if (!isNumber(value[key], 'a', type, showErrors)) return false;
+      break;
+    case 'nf': // Float number
       if (!isNumber(value[key], 'f', type, showErrors)) return false;
       break;
-    case 'ni': // Integer
+    case 'ni': // Integer number
       if (!isNumber(value[key], 'i', type, showErrors)) return false;
       break;
     case 'o': // Object
-      if (!isObject(value[key], 0, maxLength, showErrors)) return false;
+      if (!isObject(value[key], minLength, maxLength, showErrors)) return false;
       break;
     case 'r': // RegExp
       if (!(value[key] instanceof RegExp)) {
@@ -184,7 +197,7 @@ export function isNotUndefinedNull(value: any): boolean {
 }
 
 
-export function isNumber(value: any, numberType: 'i' | 'f' = 'i', type: -1 | 0 | 1 = 0, showErrors: boolean = false): boolean {
+export function isNumber(value: any, numberType: 'a' | 'i' | 'f' = 'i', type: -1 | 0 | 1 = 0, showErrors: boolean = false): boolean {
   if (typeof value == 'string') {
     if (isNaN(Number(value))) {
       if (showErrors) console.error(`\x1b[31mGiven value is not a valid 'number', it is ${typeof value}\x1b[0m`);
@@ -192,7 +205,7 @@ export function isNumber(value: any, numberType: 'i' | 'f' = 'i', type: -1 | 0 |
     }
 
     value = Number(value);
-  } else if (typeof value !== 'number') {
+  } else if (typeof value != 'number') {
     if (showErrors) console.error(`\x1b[31mGiven value is not a valid 'number', it is ${typeof value}\x1b[0m`);
     return false;
   }
