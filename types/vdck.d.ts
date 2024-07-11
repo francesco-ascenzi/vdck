@@ -116,7 +116,7 @@ export function isNotUndefinedNull(value: any): boolean;
  */
 export function isNumber(
   value: any,
-  numberType?: 'i' | 'f',
+  numberType?: 'i' | 'f' | 'a',
   type?: number,
   showErrors?: boolean
 ): boolean;
