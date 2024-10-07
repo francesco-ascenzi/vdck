@@ -241,8 +241,8 @@ export function isObject(
   maxLength: number = 5000,
   showErrors: boolean = false
 ): boolean {
-  if (!(typeof value == 'object' && !Array.isArray(value))) {
-    if (showErrors) console.error(`\x1b[31mGiven value is not an 'object', it is ${typeof value}\x1b[0m`);
+  if (!(typeof value == 'object' && !Array.isArray(value)) || typeof value === null) {
+    if (showErrors) console.error(`\x1b[31mGiven value is not an 'object', it is ${typeof value} or null\x1b[0m`);
     return false;
   }
 

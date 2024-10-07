@@ -69,9 +69,9 @@ export function isString(
  */
 export function isEmail(
   value: any, 
-  trim: boolean, 
-  regex: RegExp | null, 
-  showErrors: boolean
+  trim?: boolean, 
+  regex?: RegExp | null, 
+  showErrors?: boolean
 ): boolean;
 
 /** Check if the given key exists within the given object and its value's type based on function's parameters

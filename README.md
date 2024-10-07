@@ -15,6 +15,9 @@ Vdck is a TypeScript/CJS package that providing primitive data validation functi
 - [License](#license)  
 
 ## Updates
+**v 1.2**: 
+- isObject type check error fixed, null is now excluded
+
 **v 1.1**:  
 - Added the ```isEmail``` function to validate email addresses
 - Delete unnecessary arrays check on ```isKeyInObject```  
