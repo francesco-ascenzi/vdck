@@ -88,6 +88,11 @@ export function isKeyInObject<Obj extends Record<string, any>>(value: Obj, key: 
   type?: number,
   trim?: boolean
 } | null = null, showErrors: boolean = false): boolean {
+  if (!isObject(value) || !isString(key, true, 1) || !isString(keyValueType, true, 1)) {
+    if (showErrors) console.error(`\x1b[31mThere is an error on key => ${key} or value => ${value} or key's value type => ${keyValueType}\x1b[0m`);
+    return false;
+  }
+
   if (!(key in value)) {
     if (showErrors) console.error(`\x1b[31mGiven key '${key}' is not a key in ${value}\x1b[0m`);
     return false;
