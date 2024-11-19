@@ -203,13 +203,13 @@ export function isNotUndefinedNull(value: any): boolean {
 
 
 export function isNumber(value: any, numberType: 'a' | 'i' | 'f' = 'i', type: -1 | 0 | 1 = 0, showErrors: boolean = false): boolean {
-  if (typeof value == 'string') {
-    if (isNaN(Number(value))) {
+  if (typeof value == 'string' && value.trim() != "") {
+    if (isNaN(Number(value.trim()))) {
       if (showErrors) console.error(`\x1b[31mGiven value is not a valid 'number', it is ${typeof value}\x1b[0m`);
       return false;
     }
 
-    value = Number(value);
+    value = Number(value.trim());
   } else if (typeof value != 'number') {
     if (showErrors) console.error(`\x1b[31mGiven value is not a valid 'number', it is ${typeof value}\x1b[0m`);
     return false;

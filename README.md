@@ -15,6 +15,9 @@ Vdck is a TypeScript/CJS package that providing primitive data validation functi
 - [License](#license)  
 
 ## Updates
+**v 1.4**: 
+- ```isNumber``` function's parameters fixed, empty strings values are now excluded
+
 **v 1.3**: 
 - ```isKeyInObject``` function's parameters fixed, null/undefined/empty values are now excluded
 
