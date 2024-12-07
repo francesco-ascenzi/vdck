@@ -1,6 +1,3 @@
-/// <reference path="./types/vdck.d.ts" />
-
-
 /** ====================== == == == = = =  =  =
  * => Vdck
  * 
@@ -14,252 +11,400 @@
 // Based on RFC 5322
 const EMAIL_REGEX: RegExp = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
 
+// Types and interfaces
+type NestedCheck = { [key: string]: "number" | "string" | "boolean" | "object" | "array" | "function" | NestedCheck };
+type InferNestedCheck<strObj> = {
+  [K in keyof strObj]: strObj[K] extends "number"
+    ? number
+    : strObj[K] extends "string"
+    ? string
+    : strObj[K] extends "boolean"
+    ? boolean
+    : strObj[K] extends "object"
+    ? object
+    : strObj[K] extends "array"
+    ? any[]
+    : strObj[K] extends NestedCheck
+    ? InferNestedCheck<strObj[K]>
+    : never;
+};
 
-export function isArray(
-  value: any,
-  minLength: number = 0,
-  maxLength: number = 5000,
-  showErrors: boolean = false
-): boolean {
-  if (!Array.isArray(value)) {
-    if (showErrors) console.error(`\x1b[31mGiven value is not an 'array', it is ${typeof value}\x1b[0m`);
-    return false;
-  }
-
-  if (value.length < minLength) {
-    if (showErrors) console.error(`\x1b[31mGiven array length is ${value.length}, less than the minimum required length of ${minLength}\x1b[0m`);
-    return false;
-  }
-  
-  if (value.length > maxLength) {
-    if (showErrors) console.error(`\x1b[31mGiven array length is ${value.length}, too much than the maximum required length of ${maxLength}\x1b[0m`);
-    return false;
-  }
-
-  return true;
-}
-
-
-export function isString(
-  value: any, 
-  trim: boolean = true, 
-  minLength: number = 0, 
-  maxLength: number = 5000, 
-  regex: RegExp | null = null,
-  showErrors: boolean = false
-): boolean {
-  if (typeof value != 'string') {
-    if (showErrors) console.error(`\x1b[31mGiven value is not a 'string', it is ${typeof value}\x1b[0m`);
-    return false;
-  }
-
-  if (trim) value = value.trim();
-
-  if (value.length < minLength) {
-    if (showErrors) console.error(`\x1b[Given string has ${value.length} characters, less than the minimum required length of ${minLength}\x1b[0m`);
-    return false;
-  }
-
-  if (value.length > maxLength) {
-    if (showErrors) console.error(`\x1b[31mGiven string has ${value.length} characters, too much than the maximum required length of ${maxLength}\x1b[0m`);
-    return false;
-  }
-
-  if (regex && !regex.test(value)) {
-    if (showErrors) console.error('\x1b[31mString does not match the regular expression\x1b[0m');
-    return false;
-  }
-
-  return true;
-}
-
-
-export function isEmail(value: any, trim: boolean = false, regex: RegExp | null = null, showErrors: boolean = false): boolean {
-  if (!regex) regex = EMAIL_REGEX;
-  if (!isString(value, trim, 5, 254, regex, showErrors)) return false;
-  return true;
-}
-
-
-export function isKeyInObject<Obj extends Record<string, any>>(value: Obj, key: string, keyValueType: string, options: {
-  maxLength?: number,
+interface optionsInterface {
   minLength?: number,
-  regx?: RegExp | null,
-  type?: number,
+  maxLength?: number,
+  regex?: RegExp,
   trim?: boolean
-} | null = null, showErrors: boolean = false): boolean {
-  if (!isObject(value) || !isString(key, true, 1) || !isString(keyValueType, true, 1)) {
-    if (showErrors) console.error(`\x1b[31mThere is an error on key => ${key} or value => ${value} or key's value type => ${keyValueType}\x1b[0m`);
-    return false;
+};
+
+type availTypes = "boolean" | "object" | "symbol" | "undefined" | "string" | "number" | "bigint" | "class" | "function" | "array";
+
+// function isEmail(value: any, trim: boolean = false, regex: RegExp | null = null, showErrors: boolean = false): value is string {
+//   if (!regex) regex = EMAIL_REGEX;
+//   if (!isString(value, trim, 5, 254, regex, showErrors)) return false;
+//   return true;
+// }
+
+export default class Vdck {
+  private showErrors: boolean;
+  private asyncr: boolean;
+  private disabled: boolean;
+
+  constructor(showErrors: boolean, asyncr: boolean = false, disabled: boolean = false) {
+    this.showErrors = showErrors;
+    this.asyncr = asyncr;
+    this.disabled = disabled;
   }
 
-  if (!(key in value)) {
-    if (showErrors) console.error(`\x1b[31mGiven key '${key}' is not a key in ${value}\x1b[0m`);
-    return false;
-  }
-
-  // Initialize and checking options
-  let maxLength: number = 40000;
-  let minLength: number = 0;
-  let regx: RegExp | null = null;
-  let type: -1 | 0 | 1 = 0;
-  let trim: boolean = true;
-
-  if (options && typeof options == 'object') {
-    if (('maxLength' in options) && typeof options.maxLength == 'number' && options.maxLength >= 0) {
-      maxLength = options.maxLength;
+  /** Log errors async or sync based on constructor param
+   * 
+   * @param {string} type Error type
+   * @param {string} message Error message
+   * @returns {void}
+   */
+  private clog(type: string, message: string): void {
+    let premessage: string = "Error:";
+    if (type == "type") {
+      premessage = "Type error:";
+    } else if (type == "params") {
+      premessage = "Restriction error:";
     }
 
-    if (('minLength' in options) && typeof options.minLength == 'number' && options.minLength >= 0) {
-      minLength = options.minLength;
-    }
-
-    if (('regx' in options) && options.regx instanceof RegExp) {
-      regx = options.regx;
-    }
-
-    if (('maxLength' in options) && typeof options.maxLength == 'number' && 
-      (options.type == -1 || options.type == 0 || options.type == 1)
-    ) {
-      type = options.type;
-    }
-
-    if (('trim' in options) && typeof options.trim == 'boolean') {
-      trim = options.trim;
+    if (this.asyncr) {
+      // Async console
+    } else {
+      console.error(`[${new Date().toISOString()}]`, premessage, message);
     }
   }
 
-  // Check value type
-  switch (keyValueType.toLowerCase()) {
-    case 'a': // Array
-      if (!isArray(value[key], minLength, maxLength, showErrors)) {
+  /** Validate optional restrictions
+   * 
+   * @param {any} value Main value to check
+   * @param {string} type Value's type
+   * @param {number} options.minLength 
+   * @param {number} options.minLength 
+   * @param {number} options.minLength 
+   * @returns {boolean}
+   */
+  private optionsCheck(value: any, options?: optionsInterface): boolean {
+    
+    switch (typeof value) {
+      case "bigint":
+      break;
+      case "boolean":
+      break;
+      case "function":
+      break;
+      case "number":
+      break;
+      case "object":
+      break;
+      case "string":
+      break;
+      case "symbol":
+      break;
+      case "undefined":
+      break;
+      default: 
         return false;
-      }
+    }
+
+    return true;
+
+    // if (typeof options.minLength === "number") {
+    //   if (options.minLength < 0) {
+    //   }
+
+    //   let confrontation: any = value;
+    //   if (typeof value === "bigint")
+    //   if (this.showErrors) this.clog("params", "The minKeysLength param is not a positive number");
+    //   return false;
+    // }
+
+    // // Check method's restrictions
+    // if (Object.keys(value).length <= minKeysLength) { // Minimum keys length
+    //   if (this.showErrors) this.clog("params", `The value has ${Object.keys(value).length} ${Object.keys(value).length <= 1 ? "key" : "keys"}, less than the minimum required length of ${minKeysLength}`);
+    //   return false;
+    // }
+
+    // if (typeof maxKeysLength === "number") { // Maximum keys length
+    //   if (maxKeysLength >= (minKeysLength + 1) && Object.keys(value).length >= maxKeysLength) {
+    //     if (this.showErrors) this.clog("params", `The value has ${Object.keys(value).length} ${Object.keys(value).length <= 1 ? "key" : "keys"}, too much than the maximum required length of ${maxKeysLength}`);
+    //     return false;
+    //   }
+    // }
+  }
+
+  /** Checks the value's type
+   * 
+   * @param {any} value 
+   * @param {availTypes} type 
+   * @param {optionsInterface} options 
+   * @returns {boolean}
+   */
+  type(value: any, type: availTypes, options?: optionsInterface): value is typeof type {
+    if (this.disabled) return true;
+
+    // Type check
+    let switchPassed: boolean = true;
+    switch (type) {
+      case "bigint":
       break;
-    case 'b': // Boolean
-      if (typeof value[key] != 'boolean') {
-        if (showErrors) console.error(`\x1b[31mValue of '${key}' key is not boolean\x1b[0m`);
+      case "boolean":
+        if (typeof value !== "boolean") switchPassed = false;
+      break;
+      case "function":
+      break;
+      case "number":
+      break;
+      case "object":
+      break;
+      case "string":
+      break;
+      case "symbol":
+      break;
+      case "undefined":
+      break;
+      default: 
         return false;
-      }
-      break;
-    case 'bi': // BigInt
-      if (typeof value[key] != 'bigint') {
-        if (showErrors) console.error(`\x1b[31mValue of '${key}' key is not a bigint\x1b[0m`);
-        return false;
-      }
-      break;
-    case 'd': // Date
-      if (!(value[key] instanceof Date)) {
-        if (showErrors) console.error(`\x1b[31mValue of '${key}' key is not a date\x1b[0m`);
-        return false;
-      }
-      break;
-    case 'f': // Function
-      if (typeof value[key] != 'function') {
-        if (showErrors) console.error(`\x1b[31mValue of '${key}' key is not a function\x1b[0m`);
-        return false;
-      }
-      break;
-    case 'n': // Number
-      if (!isNumber(value[key], 'a', type, showErrors)) return false;
-      break;
-    case 'nf': // Float number
-      if (!isNumber(value[key], 'f', type, showErrors)) return false;
-      break;
-    case 'ni': // Integer number
-      if (!isNumber(value[key], 'i', type, showErrors)) return false;
-      break;
-    case 'o': // Object
-      if (!isObject(value[key], minLength, maxLength, showErrors)) return false;
-      break;
-    case 'r': // RegExp
-      if (!(value[key] instanceof RegExp)) {
-        if (showErrors) console.error(`\x1b[31mValue of '${key}' key is not a RegExp\x1b[0m`);
-        return false;
-      }
-      break;
-    case 's': // String
-      if (!isString(value[key], trim, minLength, maxLength, regx, showErrors)) return false;
-      break;
-    case 'sy': // Symbol
-      if (typeof value[key] != 'symbol') {
-        if (showErrors) console.error(`\x1b[31mValue of '${key}' key is not a symbol\x1b[0m`);
-        return false;
-      }
-      break;
-    default:
-      if (showErrors) console.error(`\x1b[31mInvalid keyValueType parameter provided '${keyValueType}'\x1b[0m`);
+    }
+
+    // Type check failed
+    if (!switchPassed) {
+      if (this.showErrors) this.clog("type", `The value is not a ${value}`);
       return false;
+    }
+
+    // Checks method's params
+    return this.optionsCheck(value, options);
   }
 
-  return true;
-}
+  /** Checks if the value is an array
+   * 
+   * @param {any} value Any value
+   * @returns {boolean}
+   */
+  array<arr>(value: any, options?: optionsInterface): value is arr[] {
+    if (this.disabled) return true;
 
+    // Checks method's value type
+    if (!Array.isArray(value)) {
+      if (this.showErrors) this.clog("type", "The value is not an array");
+      return false;
+    }
 
-export function isNotUndefinedNull(value: any): boolean {
-  if (value !== undefined && value !== null) return true;
-  return false;
-}
+    // Checks method's params
+    return this.optionsCheck(value, options);
+  }
 
+  /** Checks if the value is a number
+   * 
+   * @param {any} value Any value
+   * @returns {boolean}
+   */
+  number(value: any, options?: optionsInterface): value is number {
+    if (this.disabled) return true;
 
-export function isNumber(value: any, numberType: 'a' | 'i' | 'f' = 'i', type: -1 | 0 | 1 = 0, showErrors: boolean = false): boolean {
-  if (typeof value == 'string' && value.trim() != "") {
-    if (isNaN(Number(value.trim()))) {
+    // Checks method's value type
+    if (typeof value == 'string' && value.trim() != "") {
+      if (isNaN(Number(value.trim()))) {
+        if (showErrors) console.error(`\x1b[31mGiven value is not a valid 'number', it is ${typeof value}\x1b[0m`);
+        return false;
+      }
+
+      value = Number(value.trim());
+    } else if (typeof value != 'number') {
       if (showErrors) console.error(`\x1b[31mGiven value is not a valid 'number', it is ${typeof value}\x1b[0m`);
       return false;
     }
 
-    value = Number(value.trim());
-  } else if (typeof value != 'number') {
-    if (showErrors) console.error(`\x1b[31mGiven value is not a valid 'number', it is ${typeof value}\x1b[0m`);
-    return false;
+    // Checks method's params
+    return this.optionsCheck(value, options);
   }
 
-  // Check number type -> integer or float
-  if (numberType) {
-    if (numberType == 'i' && !Number.isInteger(value)) {
-      if (showErrors) console.error(`\x1b[31mGiven number is not an integer\x1b[0m`);
+  /** Checks if the value is an object
+   * 
+   * @param {any} value Any value
+   * @returns {boolean}
+   */
+  object(value: any, options?: optionsInterface): value is Record<string, any> {
+    if (this.disabled) return true;
+
+    // Checks method's value type
+    if (!(typeof value === "object" && value !== null && !Array.isArray(value) && !(value instanceof Function) && Object.getPrototypeOf(value) === Object.prototype)) {
+      if (this.showErrors) this.clog("type", "The value is not an object");
       return false;
-    } else if (numberType == 'f' && Number.isInteger(value)) {
-      if (showErrors) console.error(`\x1b[31mGiven number is not a float\x1b[0m`);
+    }
+
+    // Checks method's params
+    return this.optionsCheck(value, options);
+  }
+
+  /** Checks if the main object has the same structure as the struct param
+   * 
+   * @param {any} main Main object
+   * @param {strObj} struct Struct object
+   * @returns {boolean}
+   */
+  sameObjects<strObj extends NestedCheck>(main: any, struct: strObj, options?: optionsInterface): main is InferNestedCheck<strObj> {
+    // Check that both "main" and "struct" objects are [key: string]: any objects
+    if (!this.object(main) || !this.object(struct)) return false;
+
+    try {
+      for (const key in struct) {
+        if (Object.prototype.hasOwnProperty.call(struct, key)) {
+          const expectedType: strObj[Extract<keyof strObj, string>] = struct[key];
+          const actualValue: any = main[key];
+
+          if (!(key in main)) {
+            if (this.showErrors) this.clog("general", `'${key}' key is not a "main"'s object key`);
+            return false;
+          }
+
+          // Check the type based on the expected type
+          if (typeof expectedType === "string") {
+            switch (expectedType.toLowerCase()) {
+              case "number":
+                if (typeof actualValue !== "number") {
+                  if (this.showErrors) console.error(`Key '${key}' is not of type 'number'`);
+                  return false;
+                }
+                break;
+              case "string":
+                if (typeof actualValue !== "string") {
+                  if (this.showErrors) console.error(`Key '${key}' is not of type 'string'`);
+                  return false;
+                }
+                break;
+              case "boolean":
+                if (typeof actualValue !== "boolean") {
+                  if (this.showErrors) console.error(`Key '${key}' is not of type 'boolean'`);
+                  return false;
+                }
+                break;
+              case "object":
+                if (actualValue === null || Array.isArray(actualValue) || typeof actualValue !== "object") {
+                  if (this.showErrors) console.error(`Key '${key}' is not a plain object`);
+                  return false;
+                }
+                break;
+              case "array":
+                if (!Array.isArray(actualValue)) {
+                  if (this.showErrors) console.error(`Key '${key}' is not an array`);
+                  return false;
+                }
+                break;
+              case "function":
+                if (typeof actualValue !== "function") {
+                  if (this.showErrors) console.error(`Key '${key}' is not a function`);
+                  return false;
+                }
+                break;
+              default:
+                if (this.showErrors) console.error(`Unsupported type '${expectedType}' for key '${key}'`);
+                return false;
+            }
+          } else if (typeof expectedType === "object" && expectedType !== null) {
+            // Recursively check nested objects
+            if (!this.sameObjects(actualValue, expectedType, options)) {
+              if (this.showErrors) console.error(`Key '${key}' does not match the nested structure`);
+              return false;
+            }
+          } else {
+            if (this.showErrors) console.error(`Invalid structure definition for key '${key}'`);
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }
+
+      return true;
+    } catch (err: unknown) {
+      if (this.showErrors) console.error(`Error occurred: ${String(err)}`);
       return false;
     }
   }
 
-  if (isNotUndefinedNull(type)) {
-    if (type == -1 && value > 0) {
-      if (showErrors) console.error(`\x1b[31mGiven number is more than 0, it should be a negative number\x1b[0m`);
-      return false;
-    } else if (type == 1 && value < 0) {
-      if (showErrors) console.error(`\x1b[31mGiven number is less than 0, it should be a positive number\x1b[0m`);
+  /** Checks if the value is a string
+   * 
+   * @param {any} value Main object
+   * @param {optionsInterface} options Struct object
+   * @returns {boolean}
+   */
+  string(value: any, options?: optionsInterface): value is string {
+    if (this.disabled) return true;
+
+    // Checks method's value type
+    if (typeof value !== "string") {
+      if (this.showErrors) this.clog("type", "The value is not a string");
       return false;
     }
-  }
 
-  return true;
+    // Checks method's params
+    return this.optionsCheck(value, options);
+  }
 }
 
+// function isIP(
+//   value: any,
+//   showErrors: boolean = false
+// ): boolean {
+//   if (!isString(value, false, 3, 40, null, showErrors)) return false;
 
-export function isObject(
-  value: any, 
-  minLength: number = 0, 
-  maxLength: number = 5000,
-  showErrors: boolean = false
-): boolean {
-  if (!(typeof value == 'object' && !Array.isArray(value)) || !value) {
-    if (showErrors) console.error(`\x1b[31mGiven value is not an 'object', it is ${typeof value} or null\x1b[0m`);
-    return false;
-  }
+//   // IPv4-mapped IPv6 (ex. ::ffff:192.168.1.1)
+//   if (value.startsWith("::ffff:")) {
+//     const ipv4Part: string = value.slice(7);
+//     return isIP(ipv4Part, showErrors);
+//   } else if (["::1", "::"].includes(value)) {
+//     return true;
+//   }
 
-  if (Object.keys(value).length < minLength) {
-    if (showErrors) console.error(`\x1b[31mGiven object has ${Object.keys(value).length} keys, less than the minimum required length of ${minLength}\x1b[0m`);
-    return false;
-  }
+//   let splitType: string = ":";
+//   if (/\./.test(value)) {
+//     splitType = ".";
+//   }
 
-  if (Object.keys(value).length > maxLength) {
-    if (showErrors) console.error(`\x1b[31mGiven object has ${Object.keys(value).length} keys, too much than the minimum required length of ${maxLength}\x1b[0m`);
-    return false;
-  }
+//   const splittedIp: string[] = value.split(splitType);
+//   // IPv4
+//   if (splittedIp.length == 4 && splitType == ".") {
+//     for (let i = 0; i < splittedIp.length; i++) {
+//       const triplet: string = splittedIp[i];
 
-  return true;
-}
+//       const castTriplet: number = Number(triplet);
+//       if (isNaN(castTriplet) || !(castTriplet >= 0 && castTriplet <= 255)) {
+//         if (showErrors) console.error(`\x1b[31mGiven ip was not a valid IPv4 address '${value}'\x1b[0m`);
+//         return false;
+//       }
+//     }
+//   // IPv6
+//   } else if (splittedIp.length > 1 && splittedIp.length <= 8 && splitType == ":") {
+//     let emptySegments: number = 0;
+
+//     for (let i = 0; i < splittedIp.length; i++) {
+//       const part: string = splittedIp[i];
+  
+//       // Handle empty segments (for "::" abbreviation)
+//       if (part === "") {
+//         emptySegments++;
+//         continue;
+//       }
+  
+//       // Check if each segment is a valid hexadecimal string with up to 4 characters
+//       if (!/^[0-9a-fA-F]{1,4}$/.test(part)) {
+//         if (showErrors) console.error(`\x1b[31mInvalid IPv6 segment: "${part}" in "${value}"\x1b[0m`);
+//         return false;
+//       }
+//     }
+
+//     if (emptySegments > 1) {
+//       if (showErrors) console.error(`\x1b[31mInvalid IPv6 address: Too many "::" in "${value}"\x1b[0m`);
+//       return false;
+//     }
+//   // Invalid IP address
+//   } else {
+//     if (showErrors) console.error(`\x1b[31mGiven ip was not a valid ip address '${value}'\x1b[0m`);
+//     return false;
+//   }
+
+//   return true;
+// }
