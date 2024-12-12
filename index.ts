@@ -29,7 +29,7 @@ type InferNestedCheck<strObj> = {
     : never;
 };
 
-type extendedTypes = "arguments" | "array" | "arraybuffer" | "asyncfunction" | "bigint" | "bigint64array" | "biguint64array" | "boolean" | "class" | "dataView" | "date" | "error" | "float32array" | "float64array" | "function" | "generator" | "generatorfunction" | "int8array" | "int16array" | "int32array" | "json" | "map" | "math" | "module" | "null" | "number" | "object" | "promise" | "regexp" | "set" | "string" | "symbol" | "uint8array" | "uint8clampedarray" | "uint16array" | "uint32array" | "weakmap" | "weakset" | "undefined";
+type extendedTypes = "arguments" | "array" | "arraybuffer" | "asyncfunction" | "bigint" | "bigint64array" | "biguint64array" | "boolean" | "class" | "dataView" | "date" | "error" | "float" |  "float32array" | "float64array" | "function" | "generator" | "generatorfunction" | "int" | "int8array" | "int16array" | "int32array" | "json" | "map" | "math" | "module" | "null" | "number" | "object" | "promise" | "regexp" | "set" | "string" | "symbol" | "uint8array" | "uint8clampedarray" | "uint16array" | "uint32array" | "weakmap" | "weakset" | "undefined";
 type typeMap = {
   arguments: string,
   array: any[],
@@ -43,11 +43,13 @@ type typeMap = {
   dataView: string,
   date: Date,
   error: Error,
+  float: number,
   float32array: string,
   float64array: string,
   function: Function,
   generator: string,
   generatorfunction: string,
+  int: number,
   int8array: string,
   int16array: string,
   int32array: string,
@@ -77,6 +79,15 @@ interface optionsInterface {
   maxLength?: number,
   regex?: RegExp,
   trim?: boolean
+};
+
+interface optionsObj {
+  min: number,
+  max: number,
+  minLength: number,
+  maxLength: number,
+  trim: boolean,
+  regex: RegExp | null
 };
 
 export default class Vdck {
@@ -206,6 +217,18 @@ export default class Vdck {
     return true;
   }
 
+  formatOptions(fnOptions: optionsObj, options?: optionsInterface) {
+    const retObj = {
+      min: 0,
+      max: 1000 * 1000,
+      minLength: 0,
+      maxLength: 1000 * 1000,
+      trim: false,
+      regex: null
+    };
+
+  }
+
   /** Checks the value's type
    * 
    * @param {any} value 
@@ -216,57 +239,27 @@ export default class Vdck {
   type<T extends extendedTypes>(value: any, type: T, options?: optionsInterface): value is typeMap[T] {
     if (this.disabled) return true;
 
+    // Format options
+    let fnOptions: optionsObj = {
+      min: 0,
+      max: 1000 * 1000,
+      minLength: 0,
+      maxLength: 1000 * 1000,
+      trim: false,
+      regex: null
+    };
+    if (this.type(options, "object", {})) {
+      this.formatOptions(fnOptions, options);
+    }
+
     // Initialize holding switch
     let switchPassed: boolean = true;
 
     // Type check
     const valueCheck: string = {}.toString.call(value).slice(8, -1).toLowerCase();
     switch (type) {
-      case "arguments":
-      case "array":
-      case "arraybuffer":
-      case "asyncfunction":
-      case "bigint":
-      case "bigint64array":
-      case "biguint64array":
-      case "boolean":
-      case "dataView":
-      case "date":
-      case "error":
-      case "function":
-      case "float32array":
-      case "float64array":
-      case "generator":
-      case "generatorfunction":
-      case "int8array":
-      case "int16array":
-      case "int32array":
-      case "json":
-      case "map":
-      case "math":
-      case "module":
-      case "null":
-      case "promise":
-      case "regexp":
-      case "set":
-      case "symbol":
-      case "string": 
-      case "uint8array":
-      case "uint8clampedarray":
-      case "uint16array":
-      case "uint32array":
-      case "undefined":
-      case "weakmap":
-      case "weakset":
-
-        if (type != valueCheck) {
-          switchPassed = false;
-          break;
-        }
-
-        break;
       case "class":
-        
+
         if (valueCheck != "object") {
           switchPassed = false;
           break;
@@ -284,37 +277,41 @@ export default class Vdck {
 
         break;
       case "number":
+      case "int":
+      case "float":
 
         if (!(valueCheck == "string" || valueCheck == "number")) {
           switchPassed = false;
           break;
         }
 
-        // if (valueCheck == "string") {
-        //   value = Number(value.trim());
-        //   if (isNaN(value)) {
-        //     switchPassed = false;
-        //     break;
-        //   }
-        // }
+        if (valueCheck == "string") {
+          value = Number(value.trim());
+          if (isNaN(value)) {
+            switchPassed = false;
+            break;
+          }
+        }
 
-        // if (typeof value !== "number") {
-        //   switchPassed = false;
-        // } else {
-        //   if (type == "float" && Number.isInteger(value)) {
-        //     switchPassed = false;
-        //   } else if (type == "int" && !Number.isInteger(value)) {
-        //     switchPassed = false;
-        //   }
-        // }
+        if (type == "float" && Number.isInteger(value)) {
+          switchPassed = false;
+        } else if (type == "int" && !Number.isInteger(value)) {
+          switchPassed = false;
+        }
 
         break;
       case "object":
+
         if (!(!Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype)) switchPassed = false;
+
         break;
       default: 
-        if (this.showErrors) this.clog("type", "The type's value is not a valid JavaScript's type");
-        return false;
+        
+        if (type == valueCheck) {
+          switchPassed = false;
+        }
+
+        break;
     }
 
     // Type check failed
@@ -323,7 +320,6 @@ export default class Vdck {
       return false;
     }
 
-    // Checks method's params
     return true;
   }
 
