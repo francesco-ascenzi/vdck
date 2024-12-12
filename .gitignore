@@ -2,6 +2,7 @@
 .npmignore
 
 index.js
+test.js
 
 # modules
 /node_modules
