@@ -11,144 +11,111 @@
 const EMAIL_REGEX: RegExp = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
 
 // Types and interfaces
-type primitiveTypes = "bigint" | "boolean" | "number" | "object" | "string" | "symbol" | "undefined";
-type NestedCheck = { [key: string]: primitiveTypes | NestedCheck };
-type InferNestedCheck<strObj> = {
-  [K in keyof strObj]: strObj[K] extends "number"
-    ? number
-    : strObj[K] extends "string"
-    ? string
-    : strObj[K] extends "boolean"
-    ? boolean
-    : strObj[K] extends "object"
-    ? object
-    : strObj[K] extends "array"
-    ? any[]
-    : strObj[K] extends NestedCheck
-    ? InferNestedCheck<strObj[K]>
-    : never;
-};
+type jsTypes = "arguments" | "array" | "arraybuffer" | "asyncfunction" | "bigint" | "bigint64array" | "biguint64array" | "boolean" | "class" | "dataview" | "date" | "error" | "float" |  "float32array" | "float64array" | "function" | "generator" | "generatorfunction" | "int" | "int8array" | "int16array" | "int32array" | "json" | "map" | "math" | "module" | "null" | "number" | "object" | "promise" | "regexp" | "set" | "string" | "symbol" | "uint8array" | "uint8clampedarray" | "uint16array" | "uint32array" | "weakmap" | "weakset" | "undefined";
+type nestedObject = { [key: string]: jsTypes | nestedObject };
 
-type extendedTypes = "arguments" | "array" | "arraybuffer" | "asyncfunction" | "bigint" | "bigint64array" | "biguint64array" | "boolean" | "class" | "dataView" | "date" | "error" | "float" |  "float32array" | "float64array" | "function" | "generator" | "generatorfunction" | "int" | "int8array" | "int16array" | "int32array" | "json" | "map" | "math" | "module" | "null" | "number" | "object" | "promise" | "regexp" | "set" | "string" | "symbol" | "uint8array" | "uint8clampedarray" | "uint16array" | "uint32array" | "weakmap" | "weakset" | "undefined";
 type typeMap = {
-  arguments: string,
+  arguments: IArguments,
   array: any[],
-  arraybuffer: string,
-  asyncfunction: string,
+  arraybuffer: ArrayBuffer,
+  asyncfunction: (...args: unknown[]) => Promise<unknown>,
   bigint: bigint,
-  bigint64array: string,
-  biguint64array: string,
+  bigint64array: BigInt64Array,
+  biguint64array: BigUint64Array,
   boolean: boolean,
   class: object,
-  dataView: string,
+  dataview: DataView,
   date: Date,
   error: Error,
   float: number,
-  float32array: string,
-  float64array: string,
+  float32array: Float32Array,
+  float64array: Float64Array,
   function: Function,
-  generator: string,
-  generatorfunction: string,
+  generator: Generator<unknown, unknown, unknown>,
+  generatorfunction: (...args: unknown[]) => Generator<number, void, void>,
   int: number,
-  int8array: string,
-  int16array: string,
-  int32array: string,
-  json: string,
-  map: object,
-  math: string,
-  module: string
+  int8array: Int8Array,
+  int16array: Int16Array,
+  int32array: Int32Array,
+  json: Record<string, unknown>,
+  map: Map<unknown, unknown>,
+  math: Math,
+  module: object,
   null: null,
   number: number,
   object: object,
-  promise: string,
+  promise: Promise<unknown>,
   regexp: RegExp,
   set: Set<any>,
   string: string,
   symbol: symbol,
-  uint8array: string,
-  uint8clampedarray: string,
-  uint16array: string,
-  uint32array: string,
-  weakmap: string,
-  weakset: string,
+  uint8array: Uint8Array,
+  uint8clampedarray: Uint8ClampedArray,
+  uint16array: Uint16Array,
+  uint32array: Uint32Array,
+  weakmap: WeakMap<object, unknown>,
+  weakset: WeakSet<object>,
   undefined: undefined
 };
 
+type inferObjStructure<T> = T extends { [key: string]: infer U }
+  ? { [K in keyof T]:
+    U extends keyof typeMap
+    ? typeMap[U]
+    : U extends nestedObject
+    ? inferObjStructure<U>
+    : never
+  }
+: never;
+
 interface optionsInterface {
-  minLength?: number,
-  maxLength?: number,
-  regex?: RegExp,
-  trim?: boolean
+  min?: number | null,
+  max?: number,
+  trim?: boolean,
+  regex?: RegExp | null
 };
 
 interface optionsObj {
+  max: number | null,
   min: number,
-  max: number,
-  minLength: number,
-  maxLength: number,
   trim: boolean,
   regex: RegExp | null
 };
 
 export default class Vdck {
   private showErrors: boolean;
-  private asyncr: boolean;
   private disabled: boolean;
 
-  constructor(showErrors: boolean, asyncr: boolean = false, disabled: boolean = false) {
+  /** Vdck constructor
+   * 
+   * @param showErrors Show errors?
+   * @param disabled Disable every method and always return true
+   */
+  constructor(showErrors: boolean, disabled: boolean = false) {
     this.showErrors = showErrors;
-    this.asyncr = asyncr;
     this.disabled = disabled;
   }
 
-  /** Log errors async or sync based on constructor param
+  /** Log errors based on method's params
    * 
-   * @param {string} type Error type
    * @param {string} message Error message
+   * @param {string} type Error type
    * @returns {void}
    */
-  private clog(type: string, message: string): void {
-    let premessage: string = "Error:";
-    if (type == "type") {
-      premessage = "Type error:";
-    } else if (type == "params") {
-      premessage = "Restriction error:";
-    }
+  private eLog(message: any, type?: string): void {console.error(`[${new Date().toISOString()}] ${type ? `${type} error:` : "Error:"}`, message)};
 
-    if (this.asyncr) {
-      // Async console
-    } else {
-      console.error(`[${new Date().toISOString()}]`, premessage, message);
-    }
-  }
-
-  /** Validate optional restrictions
+  /** Checks if the given value is a valid email address
    * 
-   * @param {any} value Main value to check
-   * @param {string} type Value's type
-   * @param {number} options.minLength 
-   * @param {number} options.minLength 
-   * @param {number} options.minLength 
-   * @returns {boolean}
-   */
-  private getOptions(value: any, type: primitiveTypes, options?: optionsInterface): {} {
-    const cleanedOptions = {};
-    
-    return cleanedOptions;
-  }
-
-  /** Checks if the value is a valid email address
-   * 
-   * @param {any} value 
-   * @param {RegExp | null} regex
+   * @param {any} value Any value
+   * @param {RegExp | null} regex Do you prefer an alternative regex pattern? Give it as RegExp
    * @returns {boolean}
    */
   isEmail(value: any, regex: RegExp | null = null): value is string {
     if (!(regex instanceof RegExp)) regex = EMAIL_REGEX;
-    return this.type(value, "string", { minLength: 5, maxLength: 254, regex: regex });
+    return this.type(value, "string", { min: 5, max: 254, regex: regex });
   }
 
-  /** Checks if the value is a valid IPv4/IPv6 address
+  /** Checks if the given value is a valid IPv4/IPv6 address
    * 
    * @param {any} value 
    * @returns {boolean}
@@ -157,7 +124,7 @@ export default class Vdck {
     if (this.disabled) return true;
 
     // Type checks
-    if (!this.type(value, "string", { minLength: 3, maxLength: 40 })) return false;
+    if (!this.type(value, "string", { min: 3, max: 40 })) return false;
 
     // IPv4-mapped IPv6 (ex. ::ffff:192.168.1.1)
     if (value.startsWith("::ffff:")) {
@@ -180,7 +147,7 @@ export default class Vdck {
 
         const castTriplet: number = Number(triplet);
         if (isNaN(castTriplet) || !(castTriplet >= 0 && castTriplet <= 255)) {
-          if (this.showErrors) this.clog("general", `Given ip was not a valid IPv4 address '${value}'`);
+          if (this.showErrors) this.eLog(`Given ip was not a valid IPv4 address '${value}'`, "General");
           return false;
         }
       }
@@ -199,125 +166,134 @@ export default class Vdck {
 
         // Check if each segment is a valid hexadecimal string with up to 4 characters
         if (!/^[0-9a-fA-F]{1,4}$/.test(part)) {
-          if (this.showErrors) this.clog("general", `Invalid IPv6 segment: "${part}" in "${value}"`);
+          if (this.showErrors) this.eLog(`Invalid IPv6 segment: "${part}" in "${value}"`, "General");
           return false;
         }
       }
 
       if (emptySegments > 1) {
-        if (this.showErrors) this.clog("general", `Invalid IPv6 address: Too many "::" in "${value}"`);
+        if (this.showErrors) this.eLog(`Invalid IPv6 address: Too many "::" in "${value}"`, "General");
         return false;
       }
       // Invalid IP address
     } else {
-      if (this.showErrors) this.clog("general", `Given ip was not a valid ip address '${value}'`);
+      if (this.showErrors) this.eLog(`Given ip was not a valid ip address '${value}'`, "General");
       return false;
     }
 
     return true;
   }
 
-  formatOptions(fnOptions: optionsObj, options?: optionsInterface) {
-    const retObj = {
+  /** Retrieve standard options or validate and sanitize given options
+   * 
+   * @param {optionsInterface} options Options object
+   * @returns {optionsObj}
+   */
+  formatOptions(options: optionsInterface): optionsObj {
+    const fnObj: optionsObj = {
       min: 0,
-      max: 1000 * 1000,
-      minLength: 0,
-      maxLength: 1000 * 1000,
+      max: null,
       trim: false,
       regex: null
     };
 
+    if (("min" in options) && typeof options.min == "number" && Number.isInteger(options.min) && options.min >= 0) fnObj.min = options.min;
+    if (("max" in options) && typeof options.max == "number" && Number.isInteger(options.max) && options.max >= fnObj.min) fnObj.max = options.max;
+
+    if (("trim" in options) && typeof options.trim == "boolean") fnObj.trim = options.trim;
+    if (("regex" in options) && options.regex instanceof RegExp) fnObj.regex = options.regex;
+
+    return fnObj;
   }
 
-  /** Checks the value's type
+  /** Methods to validates values
    * 
-   * @param {any} value 
-   * @param {extendedTypes} type 
-   * @param {optionsInterface} options 
+   * @param {any} value Any input value
+   * @param {jsTypes} type The type that would be value
+   * @param {optionsInterface} options Validate options
    * @returns {boolean}
    */
-  type<T extends extendedTypes>(value: any, type: T, options?: optionsInterface): value is typeMap[T] {
+  type<T extends jsTypes>(value: any, type: T, options?: optionsInterface): value is typeMap[T] {
     if (this.disabled) return true;
 
-    // Format options
-    let fnOptions: optionsObj = {
-      min: 0,
-      max: 1000 * 1000,
-      minLength: 0,
-      maxLength: 1000 * 1000,
-      trim: false,
-      regex: null
-    };
-    if (this.type(options, "object", {})) {
-      this.formatOptions(fnOptions, options);
-    }
-
-    // Initialize holding switch
-    let switchPassed: boolean = true;
-
-    // Type check
+    // Initialize switch type control and retrieve the given value's type
+    let correctType: boolean = false;
     const valueCheck: string = {}.toString.call(value).slice(8, -1).toLowerCase();
+
     switch (type) {
       case "class":
-
-        if (valueCheck != "object") {
-          switchPassed = false;
-          break;
-        }
-
-        try {
-          if (!(/^class/.test(value.constructor.toString()))) {
-            if (this.showErrors) this.clog("type", `${value} is not a class`);
+        if (valueCheck == "object") {
+          try {
+            if ((/^class/.test(value.constructor.toString()))) correctType = true;
+          } catch (err: unknown) {
+            if (this.showErrors) this.eLog(err, "Unknown");
             return false;
           }
-        } catch (err: unknown) {
-          if (this.showErrors) this.clog("error", String(err));
-          return false;
         }
-
         break;
       case "number":
       case "int":
       case "float":
-
-        if (!(valueCheck == "string" || valueCheck == "number")) {
-          switchPassed = false;
-          break;
-        }
-
-        if (valueCheck == "string") {
-          value = Number(value.trim());
-          if (isNaN(value)) {
-            switchPassed = false;
-            break;
+        if (valueCheck == "string" || valueCheck == "number") {
+          if (valueCheck == "string") {
+            value = Number(value.trim());
+            if (isNaN(value)) break;
           }
-        }
+  
+          if (type == "float" && Number.isInteger(value)) break;
+          if (type == "int" && !Number.isInteger(value)) break;
 
-        if (type == "float" && Number.isInteger(value)) {
-          switchPassed = false;
-        } else if (type == "int" && !Number.isInteger(value)) {
-          switchPassed = false;
+          correctType = true;
         }
-
         break;
       case "object":
-
-        if (!(!Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype)) switchPassed = false;
-
+        if (!(type == valueCheck && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype)) {
+          break;
+        }
         break;
       default: 
-        
-        if (type == valueCheck) {
-          switchPassed = false;
-        }
-
+        if (type == valueCheck) correctType = true;
         break;
     }
 
-    // Type check failed
-    if (!switchPassed) {
-      if (this.showErrors) this.clog("type", `The value is not a ${value}`);
+    // Type checks failed
+    if (!correctType) {
+      if (this.showErrors) this.eLog(`the given value is not a valid ${valueCheck}`, "Type");
       return false;
+    }
+
+    // Options checks
+    if (options) {
+      const fnOptions: optionsObj = this.formatOptions(options);
+
+      // Trim and regex checks
+      if (valueCheck === "string") {
+        if (fnOptions.trim) value = value.trim();
+        if (fnOptions.regex instanceof RegExp && !fnOptions.regex.test(value)) {
+          if (this.showErrors) this.eLog("Params error", `the given string doesn't match the regex pattern`);
+          return false;
+        }
+      }
+
+      // Size checks
+      const size = 
+        valueCheck === "string" ? value.length :
+        valueCheck.endsWith("array") ? value.length :
+        valueCheck === "arraybuffer" ? value.byteLength :
+        valueCheck === "object" ? Object.keys(value).length :
+        valueCheck === "map" || valueCheck === "set" ? value.size :
+        null;
+
+      if (size !== null) {
+        if (size < fnOptions.min) {
+          if (this.showErrors) this.eLog("Params error", `the given value has fewer elements/characters than ${fnOptions.min}`);
+          return false;
+        }
+        if (typeof fnOptions.max === "number" && size > fnOptions.max) {
+          if (this.showErrors) this.eLog("Params error", `the given value has more elements/characters than ${fnOptions.max}`);
+          return false;
+        }
+      }
     }
 
     return true;
@@ -326,10 +302,10 @@ export default class Vdck {
   /** Checks if the main object has the same structure as the struct param
    * 
    * @param {any} main Main object
-   * @param {strObj} struct Struct object
+   * @param {structObject} struct Struct object
    * @returns {boolean}
    */
-  sameObjects<strObj extends NestedCheck>(main: any, struct: strObj): main is InferNestedCheck<strObj> {
+  sameObjects<structObject extends nestedObject>(main: any, struct: structObject): main is inferObjStructure<structObject> {
     // Check that both "main" and "struct" objects are [key: string]: any objects
     if (!this.type(main, "object") || !this.type(struct, "object")) return false;
 
@@ -346,17 +322,17 @@ export default class Vdck {
     try {
       for (const key in struct) {
         if (Object.prototype.hasOwnProperty.call(struct, key)) {
-          const expectedType: strObj[Extract<keyof strObj, string>] = struct[key];
+          const expectedType: structObject[Extract<keyof structObject, string>] = struct[key];
           const actualValue: any = main[key as keyof typeof main];
 
           if (!(key in main)) {
-            if (this.showErrors) this.clog("general", `'${key}' key is not a "main"'s object key`);
+            if (this.showErrors) this.eLog("general", `'${key}' key is not a "main"'s object key`);
             return false;
           }
 
           // Check the type based on the expected type
           if (typeof expectedType === "string") {
-            if (!this.type(actualValue, expectedType.toLowerCase() as extendedTypes, undefined)) {
+            if (!this.type(actualValue, expectedType.toLowerCase() as jsTypes, undefined)) {
               return false;
             }
           } else if (typeof expectedType === "object" && !Array.isArray(actualValue) && expectedType !== null) {
