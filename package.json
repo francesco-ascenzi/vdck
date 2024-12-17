@@ -1,6 +1,6 @@
 {
   "name": "vdck",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "author": "Frash | Francesco Ascenzi",
   "license": "Apache-2.0",
   "repository": {
@@ -8,21 +8,21 @@
     "url": "git+https://github.com/francesco-ascenzi/vdck.git"
   },
   "typings": "./types/vdck.d.ts",
-  "description": "Vdck is a TypeScript/CJS library providing validation functions for various primitive data types",
+  "description": "Vdck is a small, fast, and robust class for type-checking your data in JavaScript/TypeScript, with built-in methods to validate IP and email addresses",
   "keywords": [
+    "type-checking",
+    "type-checks",
     "javascript",
     "typescript",
     "validation",
-    "data-validation",
     "validate",
-    "data-validator",
     "validation-package",
-    "data-validation-package",
+    "email-addresses-validation",
+    "email-validation",
+    "ip-addresses-validation",
+    "ip-validation",
     "vdck"
   ],
-  "directories": {
-    "lib": "./lib/vdck"
-  },
   "devDependencies": {
     "@types/node": "^20.14.2",
     "node": "^20.14.0",
@@ -30,7 +30,7 @@
   },
   "main": "./index.js",
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=14.0.0"
   },
   "bugs": {
     "url": "https://github.com/francesco-ascenzi/vdck/issues"

@@ -1,178 +1,145 @@
 # VDCK
-Vdck is a TypeScript/CJS package that providing primitive data validation functions. Its key features includes:
-- **Comprehensive Validation**: Check arrays, strings, numbers, objects, keys' values, and handle null/undefined values.
-- **Time-Saving**: Simplifies type checking in TypeScript, reducing development time.
-- **Efficient**: Lightweight utility with a minimal footprint of just 26.0 KB.
-- **Compatibility**: Fully compatible with Node.js versions >= 6.0.0.
+Vdck is a lightweight, fast, and robust class designed for type-checking and data validation.
 
 ## Summary
 - [Updates](#updates)  
-- [Install](#install)  
 - [Import](#import)  
-- [Functions](#functions)  
+- [Constructor](#constructor)  
+- [Methods](#methods)  
+- [Options](#options)  
+- [Stats](#stats)  
 - [Funding](#funding)  
 - [Author](#author)  
 - [License](#license)  
 
 ## Updates
+**v 2.0**
+- Vdck is now a class
+- Type-checking improved thanks to ```{}.prototype.toString.call(value)``` function's return
+- ```vdck.type``` method replaced every type-checking function (e.g. ```isString``` become ```vdck.type(data, "string")```)
+- Now you can validate multiple keys/values starting from a structured object (e.g. ```vdck.sameObjects(data, { firstKey: "string" })``` ), with a nested validation checking!
+- ```isEmail``` was converted as a method
+- Added ```isIP``` method to validate IP addresses
+
 **v 1.4**: 
 - ```isNumber``` function's parameters fixed, empty strings values are now excluded
 
 **v 1.3**: 
 - ```isKeyInObject``` function's parameters fixed, null/undefined/empty values are now excluded
-
-**v 1.2**: 
-- ```isObject``` type check error fixed, null is now excluded
-
-**v 1.1**:  
-- Added the ```isEmail``` function to validate email addresses
-- Delete unnecessary arrays check on ```isKeyInObject```  
-- Added another param to to ```isNumber``` => ```'a'``` => it checks that is a number without a specific tag (int or float)  
-- Edit/delete comments and README.md  
   
-## Install
-To get started with vdck, simply install the npm package:
-```
-npm i vdck
-```
-
 ## Import
-It can be imported both as ES6 or as CommonJS module
+It can be imported both as an ES6 module:
 ```
-// Node > ES6
-import vdck from 'vdck';
-
-// Node > CommonJS
-const vdck = require('vdck');
+import Vdck from 'vdck';
+```
+or as a CommonJS module with:
+```
+const Vdck = require('vdck');
+```
+Then you can initialize it as a constant, or a variable:
+```
+const vdck = new Vdck([boolean value]);
 ```
 
-## Functions
-The following is a brief description of which functions vdck contains:
+## Constructor
+From the JS doc:
+```
+/** Vdck constructor
+ * 
+ * @param printError - It should prints errors?
+ * @param disabled [optional] - Disable every methods and always return true
+ */
+constructor(printError: boolean, disabled: boolean = false) {
+  this.printError = printError;
+  this.disabled = disabled;
+}
+```
+To instantiate it, e.g.:
+```
+const vdck = new Vdck(false, false);
+```
 
-### isArray
-Check if the given input is a valid array based on function's parameters:
-- value **{any}** - Any value to check.
-- minLength **{number}** - (default: 0) - Minimum array length.
-- maxLength **{number}** - (default: 5000) - Maximum array length.
-- showErrors **{boolean}** - (default: false) - Should it prints error message on the CLI?    
+## Methods
+The following is a brief description of which methods vdck contains:
+
+#### isEmail
+Check if the given input is a valid email address:
+```
+/** Validates whether the given value is a valid email address
+ * 
+ * By default, it uses a regex based on a simplified subset of the RFC 5322 standard
+ * 
+ * @param {any} value - The value to validate
+ * @param {RegExp | null} regex - Optional custom regex pattern for email validation
+ * @returns {boolean}
+ */
+isEmail(value: any, regex: RegExp | null = null): boolean {}
+```
+An e.g.:
+```
+if (vdck.isEmail("test.email@emailaddress.com")) {}
+```
+
+#### isIP
+Check if the given input is a valid IPv4/IPv6 address:
+```
+/** Validates whether the given value is a valid IPv4 or IPv6 address
+ *
+ * @param {any} value - The value to validate
+ * @returns {boolean}
+ */
+isIP(value: any): boolean {}
+```
+An e.g.:
+```
+if (vdck.isIP("192.168.0.1")) {}
+```
   
+#### type
+Check if the given input is the same type of method's param:
 ```
-// Node > CommonJS
-vdck.isArray(["Hello", " world", "!"]);
-
-// Node > ES6
-isArray(["Hello", " world", "!"]);
+/** Validates the type and structure of a given value
+ *
+ * @param {any} value - The value to validate
+ * @param {jsTypes} type - The expected type to validate against
+ * @param {optionsInterface} options - Optional validation parameters
+ * @returns {boolean}
+ */
+type<T extends jsTypes>(value: any, type: T, options?: optionsInterface): value is typeMap[T] {}
 ```
-
-### isString
-Check if the given input is a valid string based on function's parameters:
-- value **{any}** - Any value to check.
-- trim **{boolean}** - (default: true) - Should it trims the given value before checking it?
-- minLength **{number}** - (default: 0) - Minimum string length.
-- maxLength **{number}** - (default: 5000) - Maximum string length.
-- regex **{RegExp | null}** - (default: null) - Check regular expression to validate the string.
-- showErrors **{boolean}** - (default: false) - Should it prints error message on the CLI?  
-  
+An e.g.:
 ```
-// Node > CommonJS
-vdck.isString("Ciao!", true, 0, 100, /^[a-zA-Z0-9]+$/gm);
-
-// Node > ES6
-isString("Ciao!", true, 0, 100, /^[a-zA-Z0-9]+$/gm);
+if (vdck.isIP(anyData, "string")) {}
 ```
   
-### isEmail
-Check if the given input is a valid email address based on function's parameters:
-- value **{any}** - Any value to check.
-- trim **{boolean}** - (default: true) - Should it trims the given value before checking it?
-- regex **{RegExp | null}** - (default: null) - Check regular expression to validate the email address.
-- showErrors **{boolean}** - (default: false) - Should it prints error message on the CLI?  
-  
-```
-// Node > CommonJS
-vdck.isEmail("helloWorld@gmail.com");
-
-// Node > ES6
-isEmail("helloWorld@gmail.com");
-```
-  
-### isKeyInObject  
-> isKeyInObject function has default values for its options' parameters:  
-> **maxLength**: number = 40000;  
-> **minLength**: number = 0;  
-> **regx**: RegExp | null = null;  
-> **type**: -1 | 0 | 1 = 0;  
-> **trim**: boolean = true;  
-  
-Check if the given key exists within the given object and its value's type based on function's parameters:
-- value **{Obj extends Record<string, any>}** - Any value to check.
-- key **{string}** - Given object's key.
-- keyValueType **{string}** - Given object's key value.
-- options **{object | null}** - (default: null) - Value's key options for every type.
-- options.maxLength **{undefined | number}** - Value's key options for maximum length types.
-- options.minLength **{undefined | number}** - Value's key options for minimum length.
-- options.numberType **{undefined | string}** - Value's key options for number's type types.
-- options.regx **{undefined | RegExp | null}** - Value's key options for regexp types.
-- options.type **{undefined | number}** - Value's key options for type's types.
-- options.trim **{undefined | boolean}** - Value's key options for trim types.
-- showErrors **{boolean}** - (default: false) - Should it prints error message on the CLI?  
-  
-```
-// Node > CommonJS
-vdck.isKeyInObject({ "Hi": 2 }, 'Hi', 'n');
-
-// Node > ES6
-isKeyInObject({ "Hi": 2 }, 'Hi', 'n');
-```  
-
-### isNotUndefinedNull
-Check if the given input is not undefined nor null based on function's parameter:
-- value **{any}** - Any value to check.  
-
-```
-// Node > CommonJS
-vdck.isNotUndefinedNull(false);
-
-// Node > ES6
-isNotUndefinedNull(false);
+#### sameObjects  
 ```
 
-### isNumber
-Check if the given input is a valid number based on function's parameters:
-- value **{any}** - Any value to check.
-- numberType **{number}** - (default: 'i') - Should it be an int or a float? 'a' -> all | 'i' -> int | 'f' -> float.
-- type **{number}** - (default: 0) - Should it be a real number, a positive number, or a negative number?
-- showErrors **{boolean}** - (default: false) - Should it prints error message on the console?
-  
 ```
-// Node > CommonJS
-vdck.isNumber(21, 'i', 1);
-
-// Node > ES6
-isNumber(21, 'i', 1);
+An e.g.:
+```
 
 ```
 
-### isObject
-Check if the given input is a valid object based on function's parameters:
-- value **{any}** - Any value to check.
-- minLength **{number}** - (default: 0) - Minimum keys length.
-- maxLength **{number}** - (default: 5000) - Maximum keys length.
-- showErrors **{boolean}** - (default: false) - Should it prints error message on the console?  
-  
-```
-// Node > CommonJS
-vdck.isObject({}, 0, 1, true);
+## Options
 
-// Node > ES6
-isObject({}, 0, 1, true);
+## Stats
+I tested the ```type``` method with 39 different data types:
+```
+time          |  type-checking cycles
+--------------|-----------------------
+~ 268.683 ms  |  50.000 => 50k
+~ 547.582 ms  |  100.000 => 100k
+~ 2.50 s      |  500.000 => 500k
+~ 4.66 s      |  1.000.000 => 1kk
+~ 47.66 s     |  10.000.000 => 10kk
 ```
   
 ## Funding
 If you liked this package, consider funding it at [@PayPal](https://www.paypal.com/donate/?hosted_button_id=QL4PRUX9K9Y6A) (the link is within package.json too)
 
 ## Author
-Frash | Francesco Ascenzi ([@fra.ascenzi](https://www.instagram.com/fra.ascenzi) on IG)
+Frash | Francesco Ascenzi ([@furanji](https://www.instagram.com/furanji) on IG)
 
 ## License
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
