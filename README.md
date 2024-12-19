@@ -2,6 +2,7 @@
 Vdck is a lightweight, fast, and robust class designed for type-checking and data validation.
 
 ## Summary
+- [Overview](#overview)  
 - [Updates](#updates)  
 - [Import](#import)  
 - [Constructor](#constructor)  
@@ -12,17 +13,52 @@ Vdck is a lightweight, fast, and robust class designed for type-checking and dat
 - [Author](#author)  
 - [License](#license)  
 
+## Overview
+Here is a simple overview of Vdck methods and their returns:
+```
+import Vdck from "vdck"; || const Vdck = require("vdck");
+const vdck = new Vdck(false);
+
+vdck.isEmail("test.email@emailaddress.com") // returns true
+
+// vdck.isEmail("test.emailaddress.com") // returns false
+// vdck.isEmail("TEST.email@emailaddress.com") // returns false because there are some uppercase letters
+
+vdck.isIP("192.168.0.1") // returns true
+
+// vdck.isIP("256.256.256.256") // returns false
+// vdck.isIP(null) // returns false
+
+let type;
+vdck.type(data, "undefined") // returns true
+
+// vdck.type(data, "string") // returns false
+// vdck.type(data, "number") // returns false
+
+let sampleObj = { first: 1, second: 2 };
+vdck.sameObjects(sampleObj, { first: "number" }) // returns true
+
+// vdck.sameObjects(sampleObj, { first: "number", second: "number" }) // returns true
+// vdck.sameObjects(sampleObj, { second: "string" }) // returns false
+
+/* Best feature */
+if (vdck.sameObjects(sampleObj, { third: "number", fourth: { fifth: "number" } })) {
+  // TypeScript will not report fourth or fifth keys as an error because you've already checked their properties!
+  console.log(sampleObj.fourth.fifth) <-- TypeScript will understand that fifth is a number and it'll provide every prototype methods for the right type!
+}
+```
+
 ## Updates
 **v 2.0**
-- Vdck is now a class
-- Type-checking improved thanks to ```{}.prototype.toString.call(value)``` function's return
-- ```vdck.type``` method replaced every type-checking function (e.g. ```isString``` become ```vdck.type(data, "string")```)
-- Now you can validate multiple keys/values starting from a structured object (e.g. ```vdck.sameObjects(data, { firstKey: "string" })``` ), with a nested validation checking!
-- ```isEmail``` was converted as a method
-- Added ```isIP``` method to validate IP addresses
+- Vdck is now a ***class***.
+- **Type-checking has been improved** thanks to ```{}.prototype.toString.call(value)``` function's return.
+- ```vdck.type``` method has replaced every type-checking function (e.g. ```isString``` has become ```vdck.type(data, "string")```).
+- Now you can validate multiple keys/values starting from a structured object (e.g. ```vdck.sameObjects(data, { firstKey: "string" })``` ), with a nested validation checking! (e.g. ```{ firstKey: { secondKey: "string" }}```).
+- ```isEmail``` has been converted into a method.
+- Added the ```isIP``` method to validate IP addresses.
 
 **v 1.4**: 
-- ```isNumber``` function's parameters fixed, empty strings values are now excluded
+- ```isNumber``` function's parameters fixed, empty string values are now excluded
 
 **v 1.3**: 
 - ```isKeyInObject``` function's parameters fixed, null/undefined/empty values are now excluded
@@ -32,7 +68,7 @@ It can be imported both as an ES6 module:
 ```
 import Vdck from 'vdck';
 ```
-or as a CommonJS module with:
+or as a CommonJS module:
 ```
 const Vdck = require('vdck');
 ```
@@ -46,24 +82,21 @@ From the JS doc:
 ```
 /** Vdck constructor
  * 
- * @param printError - It should prints errors?
+ * @param printError - Should it print errors?
  * @param disabled [optional] - Disable every methods and always return true
  */
-constructor(printError: boolean, disabled: boolean = false) {
-  this.printError = printError;
-  this.disabled = disabled;
-}
+constructor(printError: boolean, disabled: boolean = false) {}
 ```
-To instantiate it, e.g.:
+To instantiate it, for example:
 ```
-const vdck = new Vdck(false, false);
+const vdck = new Vdck(false, false [optional]);
 ```
 
 ## Methods
 The following is a brief description of which methods vdck contains:
 
 #### isEmail
-Check if the given input is a valid email address:
+Validates whether the given input is a valid email address::
 ```
 /** Validates whether the given value is a valid email address
  * 
@@ -75,7 +108,7 @@ Check if the given input is a valid email address:
  */
 isEmail(value: any, regex: RegExp | null = null): boolean {}
 ```
-An e.g.:
+*Example usage*:
 ```
 if (vdck.isEmail("test.email@emailaddress.com")) {}
 ```
@@ -90,13 +123,13 @@ Check if the given input is a valid IPv4/IPv6 address:
  */
 isIP(value: any): boolean {}
 ```
-An e.g.:
+*Example usage*:
 ```
 if (vdck.isIP("192.168.0.1")) {}
 ```
   
 #### type
-Check if the given input is the same type of method's param:
+Checks whether the given input matches the method's expected parameter type:
 ```
 /** Validates the type and structure of a given value
  *
@@ -107,32 +140,57 @@ Check if the given input is the same type of method's param:
  */
 type<T extends jsTypes>(value: any, type: T, options?: optionsInterface): value is typeMap[T] {}
 ```
-An e.g.:
+*Example usage*:
 ```
 if (vdck.isIP(anyData, "string")) {}
 ```
   
 #### sameObjects  
 ```
-
+/** Checks if the main object has the same structure as the struct param
+ * 
+ * @param {any} main - The main object to validate
+ * @param {structObject} struct - The expected object to compare
+ * @returns {boolean}
+ */
+sameObjects<structObject extends nestedObject>(main: any, struct: structObject): main is inferObjStructure<structObject> {}
 ```
-An e.g.:
+*Example usage*:
 ```
-
+if (vdck.sameObjects(data, { firstKey: { secondKey: "string" } })) {}
 ```
 
 ## Options
+The ```type``` method in Vdck includes an optional parameter (*options*), which allows for additional validations and constraints.
+
+Properties:
+- trim (boolean) [default = false]: Specifies whether string inputs should be trimmed (leading and trailing whitespace removed) before validation.
+```
+vdck.type("   test   ", "string", { trim: true });
+```
+- regex (RegExp) [default = null]: Provides a custom regular expression for additional string validation. If the string does not match the regex pattern, the method returns false.
+```
+vdck.type("abc123", "string", { regex: /^[a-z]+$/ }); // Returns false due to numbers
+```
+- min (number) [default = 0]: Sets the minimum size or length for the input. This applies to strings, arrays, ArrayBuffers, objects, maps, and sets.
+```
+vdck.type([1, 2, 3], "array", { min: 5 }); // Returns false due to fewer elements
+```
+- max (number) [default = 1000 * 1000]: Sets the maximum size or length for the input. This applies to strings, arrays, ArrayBuffers, objects, maps, and sets.
+```
+vdck.type("Hello", "string", { max: 3 }); // Returns false because the string is too long
+```
 
 ## Stats
-I tested the ```type``` method with 39 different data types:
+The ```type``` method has been tested with 39 different data types:
 ```
 time          |  type-checking cycles
 --------------|-----------------------
-~ 268.683 ms  |  50.000 => 50k
-~ 547.582 ms  |  100.000 => 100k
-~ 2.50 s      |  500.000 => 500k
-~ 4.66 s      |  1.000.000 => 1kk
-~ 47.66 s     |  10.000.000 => 10kk
+~ 268.683 ms  |  50.000
+~ 547.582 ms  |  100.000
+~ 2.50 s      |  500.000
+~ 4.66 s      |  1.000.000
+~ 47.66 s     |  10.000.000
 ```
   
 ## Funding

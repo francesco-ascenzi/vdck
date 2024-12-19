@@ -12,7 +12,7 @@ import { inferObjStructure, jsTypes, nestedObject, optionsInterface, optionsObj,
 
 /** Vdck constructor
  * 
- * @param printError - It should prints errors?
+ * @param printError - Should it print errors?
  * @param disabled - Disable every methods and always return true
  */
 export default class Vdck {
