@@ -49,7 +49,7 @@ if (vdck.sameObjects(sampleObj, { third: "number", fourth: { fifth: "number" } }
 ```
 
 ## Updates
-**v 2.0.2**
+**v 2.0.2/3**
 - There was an error with the global types definitions, now fixed.
 
 **v 2.0.1**
