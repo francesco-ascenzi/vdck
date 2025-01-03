@@ -17,7 +17,7 @@ Vdck is a lightweight, fast, and robust class designed for type-checking and dat
 Here is a simple overview of Vdck methods and their returns:
 ```
 import Vdck from "vdck"; || const Vdck = require("vdck");
-const vdck = new Vdck.default(false);
+const vdck = new Vdck(false);
 
 vdck.isEmail("test.email@emailaddress.com") // returns true
 
@@ -49,7 +49,7 @@ if (vdck.sameObjects(sampleObj, { third: "number", fourth: { fifth: "number" } }
 ```
 
 ## Updates
-**v 2.0.2/3**
+**v 2.0.2-4**
 - There was an error with the global types definitions, now fixed.
 
 **v 2.0.1**
