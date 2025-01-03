@@ -1,4 +1,4 @@
-/// <reference path="./types/vdck.d.ts" />
+/// <reference path="./types/index.d.ts" />
 
 /** ====================== == == == = = =  =  =
  * => Vdck
@@ -8,7 +8,7 @@
  * ======================= == == == = = =  =  = */
 
 // Types and interfaces
-import { inferObjStructure, jsTypes, nestedObject, optionsInterface, optionsObj, typeMap } from "./types/vdck";
+import { inferObjStructure, jsTypes, nestedObject, optionsInterface, optionsObj, typeMap } from "./types/index";
 
 /** Vdck constructor
  * 
