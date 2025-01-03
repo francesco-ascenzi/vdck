@@ -17,7 +17,7 @@ Vdck is a lightweight, fast, and robust class designed for type-checking and dat
 Here is a simple overview of Vdck methods and their returns:
 ```
 import Vdck from "vdck"; || const Vdck = require("vdck");
-const vdck = new Vdck(false);
+const vdck = new Vdck.default(false);
 
 vdck.isEmail("test.email@emailaddress.com") // returns true
 
@@ -49,6 +49,9 @@ if (vdck.sameObjects(sampleObj, { third: "number", fourth: { fifth: "number" } }
 ```
 
 ## Updates
+**v 2.0.1**
+- There was an error ```vdck.type``` during the object type-checking, now fixed.
+
 **v 2.0**
 - Vdck is now a ***class***.
 - **Type-checking has been improved** thanks to ```{}.prototype.toString.call(value)``` function's return.
@@ -74,7 +77,7 @@ const Vdck = require('vdck');
 ```
 Then you can initialize it as a constant, or a variable:
 ```
-const vdck = new Vdck([boolean value]);
+const vdck = new Vdck.default([boolean value]);
 ```
 
 ## Constructor
@@ -89,7 +92,7 @@ constructor(printError: boolean, disabled: boolean = false) {}
 ```
 To instantiate it, for example:
 ```
-const vdck = new Vdck(false, false [optional]);
+const vdck = new Vdck.default(false, false [optional]);
 ```
 
 ## Methods
