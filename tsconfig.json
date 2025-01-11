@@ -7,6 +7,5 @@
     "strict": true,
     "skipLibCheck": false,
     "removeComments": true
-  },
-  "exclude": ["node_modules"]
+  }
 }

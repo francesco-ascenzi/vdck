@@ -187,7 +187,7 @@ export default class Vdck {
         }
         break;
       case "object":
-        if (type == valueCheck && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype) {
+        if (type == valueCheck && !Array.isArray(value)) {
           correctType = true;
         }
         break;
