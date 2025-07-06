@@ -243,7 +243,7 @@ export default class Vdck {
    * @param {structObject} struct - The expected object to compare
    * @returns {boolean}
    */
-  sameObjects<structObject extends nestedObject>(main: any, struct: structObject): main is structObject {
+  sameObjects<structObject extends nestedObject>(main: any, struct: structObject): main is inferObjStructure<structObject> {
     if (this.disabled) return true;
 
     // Check that both "main" and "struct" objects are [key: string]: any objects

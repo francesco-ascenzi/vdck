@@ -54,7 +54,7 @@ export type inferObjStructure<T> = T extends { [key: string]: infer U }
     ? inferObjStructure<U>
     : never
   }
-: never;
+  : never;
 
 export interface optionsInterface {
   min?: number | null,
