@@ -46,15 +46,14 @@ export type typeMap = {
   undefined: undefined
 };
 
-export type inferObjStructure<T> = T extends { [key: string]: infer U }
-  ? { [K in keyof T]:
-    U extends keyof typeMap
-    ? typeMap[U]
-    : U extends nestedObject
-    ? inferObjStructure<U>
-    : never
-  }
-  : never;
+export type inferObjStructure<T> = {
+  [K in keyof T]:
+    T[K] extends keyof typeMap
+      ? typeMap[T[K]]
+      : T[K] extends nestedObject
+        ? inferObjStructure<T[K]>
+        : never;
+};
 
 export interface optionsInterface {
   min?: number | null,
